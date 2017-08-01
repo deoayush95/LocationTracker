@@ -1,0 +1,22 @@
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+
+    <!-- Typical spacing between two views -->
+    <dimen name="spacing_extra_huge">72dp</dimen>
+    <dimen name="spacing_normal">16dp</dimen>
+    <dimen name="spacing_medium">12dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+
+    <dimen name="spacing_restaurent_layout">88dp</dimen>
+
+    <!-- Font sizes -->
+    <dimen name="font_large">20sp</dimen>
+    <dimen name="font_extra_normal">18sp</dimen>
+    <dimen name="font_normal">16sp</dimen>
+
+    <dimen name="picture_width">72dp</dimen>
+    <dimen name="margin_card_view">5dp</dimen>
+    <dimen name="elevation_card_view">3dp</dimen>
+    <dimen name="corner_radius_card_view">0dp</dimen>
+
+</resources>

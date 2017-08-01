@@ -10,22 +10,29 @@ import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.loktra.locationtracker.R;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -38,12 +45,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationListener lListener;
     private long startTime;
     private long endTime;
+    private boolean isFirstTime = true;
+
+    private FusedLocationProviderClient mFusedLocationClient;
+    private LocationRequest mLocationRequest;
+    private LocationCallback mLocationCallback;
 
     @BindView(R.id.btn_start_shift)
     Button startButton;
 
     @BindView(R.id.btn_end_shift)
     Button endButton;
+
+    @BindView(R.id.tv_shift_time)
+    TextView shiftTime;
+
+    @BindView(R.id.time_layout)
+    CardView timeLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,18 +83,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         endButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                startButton.setVisibility(View.VISIBLE);
+                endButton.setVisibility(View.GONE);
+                timeLayout.setVisibility(View.VISIBLE);
                 locationManager.removeUpdates(lListener);
                 endTime = System.currentTimeMillis();
-                MarkerOptions markerStart = new MarkerOptions().position(pointList.get(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-                MarkerOptions markerEnd = new MarkerOptions().position(pointList.get(pointList.size()-1)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                if(pointList.size()>0){
+                    MarkerOptions markerEnd = new MarkerOptions().position(pointList.get(pointList.size()-1)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                    mMap.addMarker(markerEnd);
+                }
                 PolylineOptions lineOptions = new PolylineOptions();
-                mMap.addMarker(markerStart);
-                mMap.addMarker(markerEnd);
                 lineOptions.addAll(pointList);
                 lineOptions.width(12);
                 lineOptions.color(Color.BLUE);
                 lineOptions.geodesic(true);
                 mMap.addPolyline(lineOptions);
+
+                int minutes = (int) (((endTime - startTime) / (1000*60)) % 60);
+                int hours   = (int) (((endTime - startTime) / (1000*60*60)) % 24);
+
+                String totalTime = hours + "h " + minutes + "m";
+                shiftTime.setText(totalTime);
             }
         });
 
@@ -84,8 +112,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void requestLocationData() {
         Log.e("LOCATION CHANGED", "workinggg");
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000 * 10, 0, lListener);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 10, 0, lListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000 , 0, lListener);
+//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 , 0, lListener);
 
       /*  if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
             Log.e("LOCATION CHANGED", "workinggg");
@@ -130,8 +158,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         @Override
                         public void onClick(View v) {
                             startTime = System.currentTimeMillis();
+                            isFirstTime = true;
                             mMap.clear();
+                            pointList.clear();
                             requestLocationData();
+                            startButton.setVisibility(View.GONE);
+                            endButton.setVisibility(View.VISIBLE);
+                            timeLayout.setVisibility(View.GONE);
                         }
                     });
                 } else {
@@ -155,6 +188,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.e("LOCATION CHANGED", location.getLatitude() + "");
                 Log.e("LOCATION CHANGED", location.getLongitude() + "");
                 LatLng position  = new LatLng(location.getLatitude(),location.getLongitude());
+                if(isFirstTime){
+                    isFirstTime = false;
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(position)
+                            .zoom(15)
+                            .build();
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                    MarkerOptions markerStart = new MarkerOptions().position(position).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                    mMap.addMarker(markerStart);
+                }
                 pointList.add(position);
                 Toast.makeText(MapsActivity.this,
                         "My Current location:\nLatitude:"+location.getLatitude() + "\nLogitude:" + location.getLongitude(),Toast.LENGTH_LONG).show();
@@ -179,6 +222,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         }
 
+    }
+
+    private void createLocationRequest() {
+        mLocationRequest = new LocationRequest()
+                .setInterval(TimeUnit.SECONDS.toMillis(1000))
+                .setFastestInterval(TimeUnit.SECONDS.toMillis(1000))
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
 }

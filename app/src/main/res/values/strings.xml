@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Location Tracker</string>
     <string name="title_activity_maps">Map</string>
+    <string name="string_shift_time">Total shift time</string>
+    <string name="string_start">START</string>
+    <string name="string_end">END</string>
 </resources>
