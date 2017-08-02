@@ -18,7 +18,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,6 +50,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Boolean mRequestingLocationUpdates;
     private LocationManager locationManager;
     private LocationListener lListener;
+    private static long TIME_TO_GET_UPDATE_IN_MILIS = 1000 * 10;
 
     @BindView(R.id.btn_start_shift)
     SlideView startButton;
@@ -82,7 +82,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    //set slide listener on start and end shift slider buttons
+    // Set slide listener on start and end shift slider buttons
     private void setSlideListeners() {
         startButton.setOnSlideCompleteListener(new SlideView.OnSlideCompleteListener() {
             @Override
@@ -110,7 +110,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    //draw line route on map with list on latLng points
+    // Draw line route on map with list on latLng points
     private void drawRouteOnMap() {
         if(pointList.size()>0){
             MarkerOptions markerEnd = new MarkerOptions().position(pointList.get(pointList.size()-1)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
@@ -124,7 +124,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addPolyline(lineOptions);
     }
 
-    //Show shift time layout after shift is ended
+    // Show shift time layout after shift is ended
     private void showTimeLayout() {
         startButton.setVisibility(View.VISIBLE);
         endButton.setVisibility(View.GONE);
@@ -136,7 +136,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         shiftTime.setText(totalTime);
     }
 
-    //reset values
+    // Reset values when a new shift is started
     private void resetValues() {
         startTime = System.currentTimeMillis();
         isFirstTime = true;
@@ -147,7 +147,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         timeLayout.setVisibility(View.GONE);
     }
 
-    // Request permission for GPS if not already allowed and request for location updates
+    // Request permission for location if not already allowed and request for location updates
     public void startUpdatesButtonHandler() {
         if (!mRequestingLocationUpdates) {
             mRequestingLocationUpdates = true;
@@ -177,7 +177,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    // Start location updates if GPS is on otherwise promt to in GPS.
+    // Start location updates if GPS is on otherwise promt to on GPS.
     private void startLocationUpdates() {
         boolean gps_enabled = false;
         LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
@@ -189,14 +189,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         if (ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000 * 10 , 0, lListener);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, TIME_TO_GET_UPDATE_IN_MILIS , 0, lListener);
         }
     }
 
     // Prompt user to enable GPS if it's not on
     private void askToEnableGPS() {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setMessage("location service is required for this app");
+        dialog.setMessage("location service must be on for this app to work");
         dialog.setPositiveButton("yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface paramDialogInterface, int paramInt) {
@@ -215,7 +215,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         dialog.show();
     }
 
-    //stop receiving location updates for this app
+    // Stop receiving location updates for this app
     protected void stopLocationUpdates() {
         locationManager.removeUpdates(lListener);
     }
@@ -225,7 +225,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         switch (requestCode) {
             case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    //setButtonsEnabledState();
                     startLocationUpdates();
                 } else {
                     if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
@@ -239,7 +238,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    //Show dialog when user decline location access request
+    // Show dialog when user decline location access request
     private void showRationaleDialog() {
         new AlertDialog.Builder(this)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -276,11 +275,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private class Mylocationlistener implements LocationListener {
         @Override
         public void onLocationChanged(Location location) {
-
-            Log.e("LOCATION CHANGED", "called in interval");
             if (location != null) {
-                Log.e("LOCATION CHANGED", location.getLatitude() + "");
-                Log.e("LOCATION CHANGED", location.getLongitude() + "");
                 LatLng position  = new LatLng(location.getLatitude(),location.getLongitude());
                 if(isFirstTime){
                     isFirstTime = false;
@@ -293,21 +288,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     mMap.addMarker(markerStart);
                 }
                 pointList.add(position);
-                Toast.makeText(MapsActivity.this,
-                        "My Current location:\nLatitude:"+location.getLatitude() + "\nLogitude:" + location.getLongitude(),Toast.LENGTH_LONG).show();
             }
         }
 
         @Override
         public void onProviderDisabled(String provider) {
             // TODO Auto-generated method stub
-
+            askToEnableGPS();
         }
 
         @Override
         public void onProviderEnabled(String provider) {
             // TODO Auto-generated method stub
-
         }
 
         @Override
