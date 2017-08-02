@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context="com.loktra.locationtracker.activity.MapsActivity">
 
@@ -17,16 +18,20 @@
         android:layout_centerHorizontal="true"
         android:visibility="gone"
         android:id="@+id/time_layout"
+        app:cardCornerRadius="@dimen/cardview_default_radius"
+        app:cardElevation="@dimen/cardview_default_elevation"
         android:layout_margin="@dimen/spacing_normal">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="@dimen/spacing_small">
+            android:padding="@dimen/spacing_medium">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                android:layout_centerVertical="true"
                 android:text="@string/string_shift_time" />
 
             <TextView
@@ -35,30 +40,35 @@
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/holo_blue_dark"
                 android:textSize="@dimen/font_large"
+                android:layout_centerVertical="true"
                 android:layout_alignParentRight="true"/>
 
         </RelativeLayout>
     </android.support.v7.widget.CardView>
 
-    <Button
+    <ng.max.slideview.SlideView
         android:id="@+id/btn_start_shift"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:buttonBackgroundColor="@android:color/white"
+        app:slideBackgroundColor="@android:color/holo_green_light"
+        app:slideText="@string/string_swipe_left"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:text="@string/string_start"
-        android:textColor="@android:color/holo_green_dark" />
+        android:layout_margin="@dimen/spacing_small"
+        app:slideTextColor="@android:color/white" />
 
-    <Button
+    <ng.max.slideview.SlideView
         android:id="@+id/btn_end_shift"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:buttonBackgroundColor="@android:color/white"
+        app:slideBackgroundColor="@android:color/holo_red_light"
+        app:slideText="@string/string_swipe_right"
+        app:reverseSlide="true"
+        android:visibility="gone"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_gravity="bottom|right"
-        android:text="@string/string_end"
-        android:textColor="@android:color/holo_red_dark"
-        android:visibility="gone" />
+        android:layout_margin="@dimen/spacing_small"
+        app:slideTextColor="@android:color/white" />
 
 </RelativeLayout>
 

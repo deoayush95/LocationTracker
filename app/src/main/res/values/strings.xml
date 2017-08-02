@@ -4,4 +4,7 @@
     <string name="string_shift_time">Total shift time</string>
     <string name="string_start">START</string>
     <string name="string_end">END</string>
+    <string name="Cancel">no</string>
+    <string name="string_swipe_left">Swipe left to start shift</string>
+    <string name="string_swipe_right">Swipe right to end shift</string>
 </resources>
